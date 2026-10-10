@@ -1,0 +1,198 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Approval Prediction</title>
+
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body class="min-h-screen bg-slate-100 text-slate-800">
+
+    <header class="bg-blue-900 text-white px-6 py-5 shadow">
+        <div class="max-w-5xl mx-auto">
+            <h1 class="text-2xl font-bold">Loan Approval Prediction</h1>
+            <p class="text-blue-200 text-sm mt-1">
+                Machine Learning Demonstration
+            </p>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto p-5 md:p-8">
+
+        <section class="bg-white rounded-2xl shadow-sm p-6 md:p-8">
+            <h2 class="text-xl font-bold mb-2">
+                Applicant Details
+            </h2>
+
+            <p class="text-sm text-slate-500 mb-6">
+                Enter the applicant information to generate a prediction.
+                All income and loan amounts are in Indian Rupees (₹).
+            </p>
+
+            <form id="loanForm" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                <div>
+                    <label for="applicant_income" class="block text-sm font-medium mb-2">
+                        Monthly Applicant Income (₹)
+                    </label>
+                    <input id="applicant_income" type="number" min="0" step="1"
+                        required placeholder="Example: 45000"
+                        class="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label for="coapplicant_income" class="block text-sm font-medium mb-2">
+                        Monthly Co-applicant Income (₹)
+                    </label>
+                    <input id="coapplicant_income" type="number" min="0" step="1"
+                        required value="0"
+                        class="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label for="loan_amount" class="block text-sm font-medium mb-2">
+                        Requested Loan Amount (₹)
+                    </label>
+                    <input id="loan_amount" type="number" min="1" step="1"
+                        required placeholder="Example: 500000"
+                        class="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label for="loan_term" class="block text-sm font-medium mb-2">
+                        Loan Term
+                    </label>
+                    <select id="loan_term" required
+                        class="w-full border border-slate-300 rounded-lg p-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="60">5 years (60 months)</option>
+                        <option value="120" selected>10 years (120 months)</option>
+                        <option value="180">15 years (180 months)</option>
+                        <option value="240">20 years (240 months)</option>
+                        <option value="300">25 years (300 months)</option>
+                        <option value="360">30 years (360 months)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="credit_score" class="block text-sm font-medium mb-2">
+                        Credit Score
+                    </label>
+                    <input id="credit_score" type="number" min="300" max="900"
+                        step="1" required value="700"
+                        class="w-full border border-slate-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label for="employment_type" class="block text-sm font-medium mb-2">
+                        Employment Type
+                    </label>
+                    <select id="employment_type" required
+                        class="w-full border border-slate-300 rounded-lg p-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Salaried">Salaried</option>
+                        <option value="Self-employed">Self-employed</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label for="existing_loans" class="block text-sm font-medium mb-2">
+                        Number of Existing Loans
+                    </label>
+                    <select id="existing_loans" required
+                        class="w-full border border-slate-300 rounded-lg p-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-2">
+                    <button id="predictButton" type="submit"
+                        class="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold rounded-lg py-3 transition">
+                        Predict Loan Status
+                    </button>
+                </div>
+            </form>
+
+            <div id="result" class="hidden mt-6 rounded-xl p-5" aria-live="polite">
+                <h3 id="resultTitle" class="text-lg font-bold"></h3>
+                <p id="resultMessage" class="text-sm mt-2"></p>
+            </div>
+        </section>
+
+        <p class="text-center text-xs text-slate-500 mt-6">
+            Educational demonstration using synthetic data.
+            Predictions are not actual bank decisions.
+        </p>
+
+    </main>
+
+    <script>
+        const form = document.getElementById("loanForm");
+        const result = document.getElementById("result");
+        const resultTitle = document.getElementById("resultTitle");
+        const resultMessage = document.getElementById("resultMessage");
+        const predictButton = document.getElementById("predictButton");
+
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            result.classList.add("hidden");
+            predictButton.disabled = true;
+            predictButton.textContent = "Predicting...";
+
+            const applicant = {
+                applicant_income: Number(document.getElementById("applicant_income").value),
+                coapplicant_income: Number(document.getElementById("coapplicant_income").value),
+                loan_amount: Number(document.getElementById("loan_amount").value),
+                loan_term: Number(document.getElementById("loan_term").value),
+                credit_score: Number(document.getElementById("credit_score").value),
+                employment_type: document.getElementById("employment_type").value,
+                existing_loans: Number(document.getElementById("existing_loans").value)
+            };
+
+            try {
+                const response = await fetch("/predict", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(applicant)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Prediction failed.");
+                }
+
+                result.classList.remove(
+                    "hidden", "bg-red-100", "text-red-800",
+                    "bg-green-100", "text-green-800",
+                    "bg-amber-100", "text-amber-900"
+                );
+
+                result.classList.add("bg-amber-100", "text-amber-900");
+
+                resultTitle.textContent = "Model prediction: " + data.prediction;
+                resultMessage.textContent = data.message;
+
+            } catch (error) {
+                result.classList.remove("hidden");
+                result.classList.add("bg-red-100", "text-red-800");
+                resultTitle.textContent = "Unable to predict";
+                resultMessage.textContent =
+                    error.message || "Check that the Flask server is running.";
+            } finally {
+                predictButton.disabled = false;
+                predictButton.textContent = "Predict Loan Status";
+            }
+        });
+    </script>
+
+</body>
+</html>
